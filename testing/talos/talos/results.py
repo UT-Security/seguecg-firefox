@@ -243,6 +243,8 @@ class PageloaderResults(Results):
         self.results = []
         prev_line = ""
         for line in lines:
+            if "Capture_Time" in line:
+                continue
             result = {}
 
             # Bug 1562883 - Determine what is causing a single line to get

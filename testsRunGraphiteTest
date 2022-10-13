@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# set -o xtrace
+
+# source ./mozconfig_common
+# FFBuildDir=$BROWSER_BUILD_PATH
+
+FFBuildDir=$(realpath ./ffbuilds)
+FFVersions=("stock" "segue")
+
+if [ -z "$1" ]; then
+	echo "Expected argument $0 output_folder";
+	exit 1;
+fi
+
+if [[ -f "$1" ]]; then
+	echo "$1 already exists";
+	exit 1;
+fi
+
+OUTPUTPATH=$(cd "$(dirname "$1")"; pwd)/$(basename "$1")
+mkdir -p ${OUTPUTPATH}
+cd "$(dirname "$0")"
+
+for (( i = 0; i < ${#FFVersions[@]}; i++ )); do
+	if [[ ! -d "$FFBuildDir/firefox_${FFVersions[$i]}_release" ]]; then
+		echo "Not all firefox versions found: $FFBuildDir/firefox_${FFVersions[$i]}_release";
+		exit 1;
+	fi
+done
+
+echo "Starting. Make sure to isolate cpus 1 then disable scaling with --- sudo cpufreq-set -c 1 --min 2200MHz --max 2200MHz"
+sleep 3
+
+# param: outputDir/prefix
+# param: mozconfig
+# param ${FFVersions[$j]}
+function runTest(){
+	FINISHED=0
+	for (( l = 0; l < 3; l++ )); do
+		pkill -f WebContent
+		pkill -f firefox
+		rm -f ./testing/mozharness/build/local.json
+
+		MOZCONFIG=$2 taskset -c 1 ./mach talos-test --activeTests "graphite_perf_test_mini" 2>&1 | tee "$1_terminal_output.txt"
+		retVal=${PIPESTATUS[0]}
+		if [ $retVal -eq 0 ]; then
+			FINISHED=1
+			break;
+		else
+			echo "Failed to run test zerocost for $1. Retrying..." | tee -a "$1_terminal_output.txt"
+			mv "$1_terminal_output.txt" "$1_terminal_output.run_$l.txt"
+			sleep 30
+		fi
+	done
+	if [ $FINISHED -eq 0 ]; then
+		echo "Failed to run test zerocost for $1." | tee -a "$1_terminal_output.txt"
+		exit 1
+	fi
+	sleep 10
+	mv ./testing/mozharness/build/local.json "$1_rlbox_test_page_render.json"
+}
+
+SAVEDDIR=$PWD
+
+for (( j = 0; j < ${#FFVersions[@]}; j++ )); do
+	runTest "${OUTPUTPATH}/${FFVersions[$j]}" "mozconfig_${FFVersions[$j]}_release" "${FFVersions[$j]}"
+	cd $SAVEDDIR
+done
+
+for (( j = 0; j < ${#FFVersions[@]}; j++ )); do
+	./testsExtractFromLogs.py "${OUTPUTPATH}/${FFVersions[$j]}_terminal_output.txt" 2>&1 >> "${OUTPUTPATH}/${FFVersions[$j]}_terminal_analysis.json"
+done
+
+./testsAnalyzeExtractedLogs.py "${OUTPUTPATH}/"

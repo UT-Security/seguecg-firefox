@@ -237,3 +237,4 @@ docs/mots/index.rst
 
 ffbuilds/
 
+*.develop

@@ -4661,9 +4661,35 @@ bool nsGlobalWindowOuter::CanMoveResizeWindows(CallerType aCallerType) {
   return true;
 }
 
+static std::atomic<unsigned int> g_graphite_count = 1;
+
+static bool CheckGraphiteString(const char* msg) {
+  // Time to reflow 10 times with changed font sizes: 6614ms
+  std::string str = msg;
+
+  std::string prefix("Time to reflow 10 times with changed font sizes: ");
+  if (!str.compare(0, prefix.size(), prefix)) {
+    auto time_str = str.substr(prefix.size());
+    // Remove trailing "ms"
+    auto time_val_str = time_str.substr(0, time_str.size() - 2);
+    auto time_val = std::stoi(time_val_str);
+    long int time_ns = time_val;
+
+    auto graphite_count = g_graphite_count++;
+    printf("Capture_Time:Graphite,%u,%ld,%lu|\n", graphite_count, time_ns, (long unsigned) getpid());
+
+    return true;
+  }
+
+  return false;
+}
+
 bool nsGlobalWindowOuter::AlertOrConfirm(bool aAlert, const nsAString& aMessage,
                                          nsIPrincipal& aSubjectPrincipal,
                                          ErrorResult& aError) {
+  if (CheckGraphiteString(NS_ConvertUTF16toUTF8(aMessage).get())) {
+    return false;
+  }
   // XXX This method is very similar to nsGlobalWindowOuter::Prompt, make
   // sure any modifications here don't need to happen over there!
   if (!AreDialogsEnabled()) {
@@ -4758,6 +4784,9 @@ void nsGlobalWindowOuter::PromptOuter(const nsAString& aMessage,
                                       nsAString& aReturn,
                                       nsIPrincipal& aSubjectPrincipal,
                                       ErrorResult& aError) {
+  if (CheckGraphiteString(NS_ConvertUTF16toUTF8(aMessage).get())) {
+    return;
+  }
   // XXX This method is very similar to nsGlobalWindowOuter::AlertOrConfirm,
   // make sure any modifications here don't need to happen over there!
   SetDOMStringToNull(aReturn);
