@@ -22,6 +22,8 @@
 #  include "mozilla/rlbox/rlbox_noop_sandbox.hpp"
 #endif
 
+#define RLBOX_MEASURE_TRANSITION_TIMES
+
 #include "mozilla/rlbox/rlbox.hpp"
 
 // Struct info needed for rlbox_load_structs_from_library

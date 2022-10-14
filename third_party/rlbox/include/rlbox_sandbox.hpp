@@ -4,9 +4,7 @@
 
 #include <algorithm>
 #include <atomic>
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
 #  include <chrono>
-#endif
 #include <cstdlib>
 #include <limits>
 #include <map>
@@ -14,10 +12,8 @@
 #ifndef RLBOX_USE_CUSTOM_SHARED_LOCK
 #  include <shared_mutex>
 #endif
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
 #  include <sstream>
 #  include <string>
-#endif
 #include <stdint.h>
 #include <type_traits>
 #include <utility>
@@ -30,9 +26,7 @@
 #include "rlbox_type_traits.hpp"
 #include "rlbox_wrapper_traits.hpp"
 
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
 using namespace std::chrono;
-#endif
 
 namespace rlbox {
 
@@ -48,15 +42,11 @@ namespace convert_fn_ptr_to_sandbox_equivalent_detail {
     T_Ret (*)(T_Args...));
 }
 
-#if defined(RLBOX_MEASURE_TRANSITION_TIMES) ||                                 \
-  defined(RLBOX_TRANSITION_ACTION_OUT) || defined(RLBOX_TRANSITION_ACTION_IN)
 enum class rlbox_transition
 {
   INVOKE,
   CALLBACK
 };
-#endif
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
 struct rlbox_transition_timing
 {
   rlbox_transition invoke;
@@ -77,7 +67,6 @@ struct rlbox_transition_timing
     return ret.str();
   }
 };
-#endif
 
 #ifndef RLBOX_SINGLE_THREADED_INVOCATIONS
 #  error                                                                       \
@@ -96,9 +85,7 @@ class rlbox_sandbox : protected T_Sbx
   KEEP_CLASSES_FRIENDLY
 
 private:
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
   std::vector<rlbox_transition_timing> transition_times;
-#endif
 
   static inline RLBOX_SHARED_LOCK(sandbox_list_lock);
   // The actual type of the vector is std::vector<rlbox_sandbox<T_Sbx>*>
@@ -1012,7 +999,6 @@ public:
     return reinterpret_cast<T*>(ret);
   }
 
-#ifdef RLBOX_MEASURE_TRANSITION_TIMES
   inline std::vector<rlbox_transition_timing>&
   process_and_get_transition_times()
   {
@@ -1031,7 +1017,6 @@ public:
     return ret;
   }
   inline void clear_transition_times() { transition_times.clear(); }
-#endif
 };
 
 #if defined(__clang__)
