@@ -111,7 +111,6 @@ class nsJPEGDecoder : public Decoder {
   sandbox_callback_jpeg<boolean(*)(j_decompress_ptr)>* m_fill_input_buffer_cb;
   sandbox_callback_jpeg<void(*)(j_common_ptr)>* m_my_error_exit_cb;
   sandbox_callback_jpeg<void(*)(j_common_ptr)>* m_progress_monitor_cb;
-  size_t m_chosen_sandbox_index = -1;
 
   std::string mImageString;
  public:

@@ -44,6 +44,7 @@ if CONFIG["MOZ_JXL"]:
 include("/ipc/chromium/chromium-config.mozbuild")
 
 LOCAL_INCLUDES += [
+    "!/security/rlbox",
     # Access to Skia headers for Downscaler.
     "/gfx/2d",
     # Decoders need ImageLib headers.

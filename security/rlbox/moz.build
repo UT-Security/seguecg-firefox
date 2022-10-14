@@ -64,3 +64,8 @@ if CONFIG["MOZ_WASM_SANDBOXING_WOFF2"]:
     include("/modules/woff2/sources.mozbuild")
     WASM_SOURCES += ["/modules/woff2/" + s for s in woff2_sources]
     LOCAL_INCLUDES += ["/modules/woff2/include"]
+
+if CONFIG["MOZ_WASM_SANDBOXING_JPEG"]:
+    include("/media/libjpeg/sources.mozbuild")
+    WASM_SOURCES += ["/media/libjpeg/" + s for s in jpeg_sources]
+    LOCAL_INCLUDES += ["/media/libjpeg"]

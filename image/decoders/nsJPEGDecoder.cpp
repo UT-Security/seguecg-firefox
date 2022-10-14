@@ -97,45 +97,31 @@ struct nsJPEGDecoderSandboxData {
   sandbox_callback_jpeg<boolean(*)(j_decompress_ptr)> fill_input_buffer_cb;
   sandbox_callback_jpeg<void(*)(j_common_ptr)> my_error_exit_cb;
   sandbox_callback_jpeg<void(*)(j_common_ptr)> progress_monitor_cb;
+
+  nsJPEGDecoderSandboxData() {
+    sandbox.create_sandbox();
+    init_source_cb = sandbox.register_callback(init_source);
+    term_source_cb = sandbox.register_callback(term_source);
+    skip_input_data_cb = sandbox.register_callback(skip_input_data);
+    fill_input_buffer_cb = sandbox.register_callback(fill_input_buffer);
+    my_error_exit_cb = sandbox.register_callback(my_error_exit);
+    progress_monitor_cb = sandbox.register_callback(progress_monitor);
+  }
 };
 
-static std::deque<nsJPEGDecoderSandboxData> jpeg_sandboxes;
+static nsJPEGDecoderSandboxData* chosenSandbox = nullptr;
 static std::mutex jpeg_sandbox_create_mutex;
 
 void nsJPEGDecoder::getRLBoxSandbox() {
   std::lock_guard<std::mutex> lock(jpeg_sandbox_create_mutex);
-
-  nsJPEGDecoderSandboxData* chosenSandbox = nullptr;
-  size_t chosenSandboxIndex = 0;
-
-  // so just reuse the existing one instead of creating a new one
-  if (jpeg_sandboxes.size() > 0) {
-    chosenSandboxIndex = 0;
-    chosenSandbox = &jpeg_sandboxes[0];
+  if (chosenSandbox == nullptr) {
+    chosenSandbox = new nsJPEGDecoderSandboxData();
   }
 
-  // look for a free sandbox
-  // for(auto& sbx : jpeg_sandboxes) {
-  //   if (!sbx.used) {
-  //     chosenSandbox = &sbx;
-  //     break;
-  //   }
-  //   chosenSandboxIndex++;
-  // }
-
-  // could not find a sandbox.
-  // create a new sandbox at the end of the queue
-  // chosenSandboxIndex already points to the end of the vector
-  if (chosenSandbox == nullptr) {
-    // create sandbox add to jpeg_sandboxes and set chosen_sandbox
-    chosenSandbox = &(jpeg_sandboxes.emplace_back());
-    chosenSandbox->sandbox.create_sandbox();
-    chosenSandbox->init_source_cb = chosenSandbox->sandbox.register_callback(init_source);
-    chosenSandbox->term_source_cb = chosenSandbox->sandbox.register_callback(term_source);
-    chosenSandbox->skip_input_data_cb = chosenSandbox->sandbox.register_callback(skip_input_data);
-    chosenSandbox->fill_input_buffer_cb = chosenSandbox->sandbox.register_callback(fill_input_buffer);
-    chosenSandbox->my_error_exit_cb = chosenSandbox->sandbox.register_callback(my_error_exit);
-    chosenSandbox->progress_monitor_cb = chosenSandbox->sandbox.register_callback(progress_monitor);
+  while (chosenSandbox->used == true) {
+    jpeg_sandbox_create_mutex.unlock();
+    usleep(100);
+    jpeg_sandbox_create_mutex.lock();
   }
 
   chosenSandbox->used = true;
@@ -146,7 +132,6 @@ void nsJPEGDecoder::getRLBoxSandbox() {
   m_fill_input_buffer_cb = &(chosenSandbox->fill_input_buffer_cb);
   m_my_error_exit_cb = &(chosenSandbox->my_error_exit_cb);
   m_progress_monitor_cb = &(chosenSandbox->progress_monitor_cb);
-  m_chosen_sandbox_index = chosenSandboxIndex;
 }
 
 void nsJPEGDecoder::releaseRLBoxSandbox()
@@ -158,9 +143,8 @@ void nsJPEGDecoder::releaseRLBoxSandbox()
   m_fill_input_buffer_cb = nullptr;
   m_my_error_exit_cb = nullptr;
 
-  std::lock_guard<std::mutex> lock(jpeg_sandbox_create_mutex);
-  jpeg_sandboxes[m_chosen_sandbox_index].used = false;
-  m_chosen_sandbox_index = -1;
+  std::lock_guard<std::mutex> lock2(jpeg_sandbox_create_mutex);
+  chosenSandbox->used = false;
 }
 
 inline std::string getImageURIString(RasterImage* aImage)
