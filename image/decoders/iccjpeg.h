@@ -26,6 +26,8 @@
 #include <stdio.h> /* needed to define "FILE", "NULL" */
 #include "jpeglib.h"
 
+#include "JpegRLBoxTypes.h"
+
 /*
  * Reading a JPEG file that may contain an ICC profile requires two steps:
  *
@@ -59,7 +61,7 @@ extern void setup_read_icc_profile JPP((j_decompress_ptr cinfo));
  * will prefer to have the data stick around after decompression finishes.)
  */
 
-extern boolean read_icc_profile JPP((j_decompress_ptr cinfo,
+extern boolean read_icc_profile JPP((tainted_opaque_jpeg<j_decompress_ptr> cinfo,
                                      JOCTET** icc_data_ptr,
                                      unsigned int* icc_data_len));
 #endif  // mozilla_image_decoders_iccjpeg_h

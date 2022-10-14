@@ -9,12 +9,17 @@ FFBuildDir=$(realpath ./ffbuilds)
 FFVersions=("stock" "segue")
 
 if [ -z "$1" ]; then
-	echo "Expected argument $0 output_folder";
+	echo "Missing output_folder. Expected argument $0 output_folder [graphite_perf_test, jpeg_perf, jpeg_black_width_perf]";
 	exit 1;
 fi
 
 if [[ -f "$1" ]]; then
 	echo "$1 already exists";
+	exit 1;
+fi
+
+if [ -z "$2" ]; then
+	echo "Missing testname. Expected argument $0 output_folder [graphite_perf_test_mini, jpeg_perf, jpeg_black_width_perf]";
 	exit 1;
 fi
 
@@ -34,7 +39,7 @@ sleep 3
 
 # param: outputDir/prefix
 # param: mozconfig
-# param ${FFVersions[$j]}
+# param: testname
 function runTest(){
 	FINISHED=0
 	for (( l = 0; l < 3; l++ )); do
@@ -42,19 +47,21 @@ function runTest(){
 		pkill -f firefox
 		rm -f ./testing/mozharness/build/local.json
 
-		MOZCONFIG=$2 taskset -c 1 ./mach talos-test --activeTests "graphite_perf_test_mini" 2>&1 | tee "$1_terminal_output.txt"
+		# for (( k = 0; k < 5; k++ )); do
+		MOZCONFIG=$2 taskset -c 1 ./mach talos-test --activeTests "$3" 2>&1 | tee "$1_terminal_output.txt"
+		# done
 		retVal=${PIPESTATUS[0]}
 		if [ $retVal -eq 0 ]; then
 			FINISHED=1
 			break;
 		else
-			echo "Failed to run test zerocost for $1. Retrying..." | tee -a "$1_terminal_output.txt"
+			echo "Failed to run test benchmark for $1. Retrying..." | tee -a "$1_terminal_output.txt"
 			mv "$1_terminal_output.txt" "$1_terminal_output.run_$l.txt"
 			sleep 30
 		fi
 	done
 	if [ $FINISHED -eq 0 ]; then
-		echo "Failed to run test zerocost for $1." | tee -a "$1_terminal_output.txt"
+		echo "Failed to run test benchmark for $1." | tee -a "$1_terminal_output.txt"
 		exit 1
 	fi
 	sleep 10
@@ -64,7 +71,7 @@ function runTest(){
 SAVEDDIR=$PWD
 
 for (( j = 0; j < ${#FFVersions[@]}; j++ )); do
-	runTest "${OUTPUTPATH}/${FFVersions[$j]}" "mozconfig_${FFVersions[$j]}_release" "${FFVersions[$j]}"
+	runTest "${OUTPUTPATH}/${FFVersions[$j]}" "mozconfig_${FFVersions[$j]}_release" $2
 	cd $SAVEDDIR
 done
 

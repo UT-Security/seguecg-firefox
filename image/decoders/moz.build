@@ -21,7 +21,7 @@ elif toolkit == "android":
 
 UNIFIED_SOURCES += [
     "EXIF.cpp",
-    "iccjpeg.c",
+    "iccjpeg.cpp",
     "nsBMPDecoder.cpp",
     "nsGIFDecoder2.cpp",
     "nsICODecoder.cpp",

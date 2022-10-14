@@ -23,14 +23,23 @@ extern "C" {
 }
 
 #include <setjmp.h>
+#include <memory>
 
 namespace mozilla::image {
 
 typedef struct {
   struct jpeg_error_mgr pub;  // "public" fields for IJG library
-  jmp_buf setjmp_buffer;      // For handling catastropic errors
+  // jmp_buf setjmp_buffer;      // For handling catastropic errors
 } decoder_error_mgr;
 
+}  // namespace mozilla::image
+
+
+typedef mozilla::image::decoder_error_mgr decoder_error_mgr;
+
+#include "JpegRLBoxTypes.h"
+
+namespace mozilla::image {
 typedef enum {
   JPEG_HEADER,  // Reading JFIF headers
   JPEG_START_DECOMPRESS,
@@ -69,7 +78,7 @@ class nsJPEGDecoder : public Decoder {
   friend class DecoderFactory;
 
   // Decoders should only be instantiated via DecoderFactory.
-  nsJPEGDecoder(RasterImage* aImage, Decoder::DecodeStyle aDecodeStyle);
+  nsJPEGDecoder(RasterImage* aImage, Decoder::DecodeStyle aDecodeStyle, RasterImage* aImageExtra);
 
   enum class State { JPEG_DATA, FINISHED_JPEG_DATA };
 
@@ -80,10 +89,46 @@ class nsJPEGDecoder : public Decoder {
   StreamingLexer<State> mLexer;
 
  public:
-  struct jpeg_decompress_struct mInfo;
-  struct jpeg_source_mgr mSourceMgr;
-  struct jpeg_progress_mgr mProgressMgr;
-  decoder_error_mgr mErr;
+  rlbox_sandbox_jpeg* mSandbox;
+
+  tainted_opaque_jpeg<unsigned char*> transfer_input_bytes(
+    unsigned char* buffer, size_t size,
+    tainted_opaque_jpeg<unsigned char*>& transfer_buffer,
+    size_t& transfer_buffer_size);
+
+  tainted_opaque_jpeg<unsigned char*> transfer_input_bytes(
+    unsigned char* buffer, size_t size,
+    tainted_opaque_jpeg<unsigned char*>& transfer_buffer,
+    size_t& transfer_buffer_size,
+    bool& used_copy);
+
+ private:
+  void getRLBoxSandbox();
+  void releaseRLBoxSandbox();
+  sandbox_callback_jpeg<void(*)(jpeg_decompress_struct *)>* m_init_source_cb;
+  sandbox_callback_jpeg<void(*)(j_decompress_ptr)>* m_term_source_cb;
+  sandbox_callback_jpeg<void(*)(j_decompress_ptr, long)>* m_skip_input_data_cb;
+  sandbox_callback_jpeg<boolean(*)(j_decompress_ptr)>* m_fill_input_buffer_cb;
+  sandbox_callback_jpeg<void(*)(j_common_ptr)>* m_my_error_exit_cb;
+  sandbox_callback_jpeg<void(*)(j_common_ptr)>* m_progress_monitor_cb;
+  size_t m_chosen_sandbox_index = -1;
+
+  std::string mImageString;
+ public:
+  tainted_opaque_jpeg<unsigned char*> m_input_transfer_buffer;
+  size_t m_input_transfer_buffer_size;
+  tainted_opaque_jpeg<unsigned char*> m_output_transfer_buffer;
+  size_t m_output_transfer_buffer_size;
+
+  tainted_opaque_jpeg<unsigned char**> m_p_output_transfer_buffer;
+
+  jmp_buf m_jmpBuff;
+  bool m_jmpBuffValid = false;
+
+  tainted_opaque_jpeg<jpeg_decompress_struct*> p_mInfo;
+  tainted_opaque_jpeg<jpeg_source_mgr*> p_mSourceMgr;
+  tainted_opaque_jpeg<jpeg_progress_mgr*> p_mProgressMgr;
+  tainted_opaque_jpeg<decoder_error_mgr*> p_mErr;
   jstate mState;
 
   uint32_t mBytesToSkip;

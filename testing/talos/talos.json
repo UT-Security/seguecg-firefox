@@ -75,7 +75,7 @@
       "benchmark_zip": "jetstream.zip"
     },
     "seguecg": {
-      "tests": ["graphite_perf_test", "graphite_perf_test_mini"]
+      "tests": ["jpeg_perf", "jpeg_black_width_perf", "graphite_perf_test", "graphite_perf_test_mini"]
     },
     "svgr": {
       "tests": ["tsvgx", "tsvgr_opacity", "tscrollx", "tsvg_static", "tart"]

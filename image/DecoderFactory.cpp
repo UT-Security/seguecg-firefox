@@ -120,7 +120,8 @@ DecoderFlags DecoderFactory::GetDefaultDecoderFlagsForType(DecoderType aType) {
 /* static */
 already_AddRefed<Decoder> DecoderFactory::GetDecoder(DecoderType aType,
                                                      RasterImage* aImage,
-                                                     bool aIsRedecode) {
+                                                     bool aIsRedecode,
+                                                     RasterImage* aImageExtra) {
   RefPtr<Decoder> decoder;
 
   switch (aType) {
@@ -134,7 +135,7 @@ already_AddRefed<Decoder> DecoderFactory::GetDecoder(DecoderType aType,
       // If we have all the data we don't want to waste cpu time doing
       // a progressive decode.
       decoder = new nsJPEGDecoder(
-          aImage, aIsRedecode ? Decoder::SEQUENTIAL : Decoder::PROGRESSIVE);
+          aImage, aIsRedecode ? Decoder::SEQUENTIAL : Decoder::PROGRESSIVE, aImageExtra);
       break;
     case DecoderType::BMP:
       decoder = new nsBMPDecoder(aImage);
@@ -181,7 +182,7 @@ nsresult DecoderFactory::CreateDecoder(
   // Create an anonymous decoder. Interaction with the SurfaceCache and the
   // owning RasterImage will be mediated by DecodedSurfaceProvider.
   RefPtr<Decoder> decoder = GetDecoder(
-      aType, nullptr, bool(aDecoderFlags & DecoderFlags::IS_REDECODE));
+      aType, nullptr, bool(aDecoderFlags & DecoderFlags::IS_REDECODE), aImage);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.
@@ -240,7 +241,7 @@ nsresult DecoderFactory::CreateAnimationDecoder(
   // Create an anonymous decoder. Interaction with the SurfaceCache and the
   // owning RasterImage will be mediated by AnimationSurfaceProvider.
   RefPtr<Decoder> decoder =
-      GetDecoder(aType, nullptr, /* aIsRedecode = */ true);
+      GetDecoder(aType, nullptr, /* aIsRedecode = */ true, aImage);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.
@@ -292,7 +293,7 @@ already_AddRefed<Decoder> DecoderFactory::CloneAnimationDecoder(
                  type == DecoderType::WEBP || type == DecoderType::AVIF,
              "Calling CloneAnimationDecoder for non-animating DecoderType");
 
-  RefPtr<Decoder> decoder = GetDecoder(type, nullptr, /* aIsRedecode = */ true);
+  RefPtr<Decoder> decoder = GetDecoder(type, nullptr, /* aIsRedecode = */ true, nullptr);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.
@@ -318,7 +319,7 @@ already_AddRefed<IDecodingTask> DecoderFactory::CreateMetadataDecoder(
   }
 
   RefPtr<Decoder> decoder =
-      GetDecoder(aType, aImage, /* aIsRedecode = */ false);
+      GetDecoder(aType, aImage, /* aIsRedecode = */ false, aImage);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.
@@ -392,7 +393,7 @@ already_AddRefed<Decoder> DecoderFactory::CreateAnonymousDecoder(
   }
 
   RefPtr<Decoder> decoder =
-      GetDecoder(aType, /* aImage = */ nullptr, /* aIsRedecode = */ false);
+      GetDecoder(aType, /* aImage = */ nullptr, /* aIsRedecode = */ false, nullptr);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.
@@ -426,7 +427,7 @@ already_AddRefed<Decoder> DecoderFactory::CreateAnonymousMetadataDecoder(
   }
 
   RefPtr<Decoder> decoder =
-      GetDecoder(aType, /* aImage = */ nullptr, /* aIsRedecode = */ false);
+      GetDecoder(aType, /* aImage = */ nullptr, /* aIsRedecode = */ false, nullptr);
   MOZ_ASSERT(decoder, "Should have a decoder now");
 
   // Initialize the decoder.

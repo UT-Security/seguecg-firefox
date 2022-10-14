@@ -23,6 +23,9 @@
 
 #include "iccjpeg.h"
 #include <stdlib.h> /* define malloc() */
+#include "nsJPEGDecoder.h"
+
+#include "JpegRLBox.h"
 
 /*
  * Since an ICC profile can be larger than the maximum size of a JPEG marker
@@ -55,22 +58,22 @@ void setup_read_icc_profile(j_decompress_ptr cinfo) {
  * Handy subroutine to test whether a saved marker is an ICC profile marker.
  */
 
-static boolean marker_is_icc(jpeg_saved_marker_ptr marker) {
-  return marker->marker == ICC_MARKER &&
-         marker->data_length >= ICC_OVERHEAD_LEN &&
+static boolean marker_is_icc(tainted_jpeg<jpeg_saved_marker_ptr> marker) {
+  return marker->marker.UNSAFE_unverified() == ICC_MARKER &&
+         marker->data_length.UNSAFE_unverified() >= ICC_OVERHEAD_LEN &&
          /* verify the identifying string */
-         GETJOCTET(marker->data[0]) == 0x49 &&
-         GETJOCTET(marker->data[1]) == 0x43 &&
-         GETJOCTET(marker->data[2]) == 0x43 &&
-         GETJOCTET(marker->data[3]) == 0x5F &&
-         GETJOCTET(marker->data[4]) == 0x50 &&
-         GETJOCTET(marker->data[5]) == 0x52 &&
-         GETJOCTET(marker->data[6]) == 0x4F &&
-         GETJOCTET(marker->data[7]) == 0x46 &&
-         GETJOCTET(marker->data[8]) == 0x49 &&
-         GETJOCTET(marker->data[9]) == 0x4C &&
-         GETJOCTET(marker->data[10]) == 0x45 &&
-         GETJOCTET(marker->data[11]) == 0x0;
+         GETJOCTET(marker->data[0]).UNSAFE_unverified() == 0x49 &&
+         GETJOCTET(marker->data[1]).UNSAFE_unverified() == 0x43 &&
+         GETJOCTET(marker->data[2]).UNSAFE_unverified() == 0x43 &&
+         GETJOCTET(marker->data[3]).UNSAFE_unverified() == 0x5F &&
+         GETJOCTET(marker->data[4]).UNSAFE_unverified() == 0x50 &&
+         GETJOCTET(marker->data[5]).UNSAFE_unverified() == 0x52 &&
+         GETJOCTET(marker->data[6]).UNSAFE_unverified() == 0x4F &&
+         GETJOCTET(marker->data[7]).UNSAFE_unverified() == 0x46 &&
+         GETJOCTET(marker->data[8]).UNSAFE_unverified() == 0x49 &&
+         GETJOCTET(marker->data[9]).UNSAFE_unverified() == 0x4C &&
+         GETJOCTET(marker->data[10]).UNSAFE_unverified() == 0x45 &&
+         GETJOCTET(marker->data[11]).UNSAFE_unverified() == 0x0;
 }
 
 /*
@@ -92,9 +95,10 @@ static boolean marker_is_icc(jpeg_saved_marker_ptr marker) {
  * return FALSE.  You might want to issue an error message instead.
  */
 
-boolean read_icc_profile(j_decompress_ptr cinfo, JOCTET** icc_data_ptr,
+boolean read_icc_profile(tainted_opaque_jpeg<j_decompress_ptr> o_cinfo, JOCTET** icc_data_ptr,
                          unsigned int* icc_data_len) {
-  jpeg_saved_marker_ptr marker;
+  tainted_jpeg<j_decompress_ptr> cinfo = rlbox::from_opaque(o_cinfo);
+  tainted_jpeg<jpeg_saved_marker_ptr> t_marker;
   int num_markers = 0;
   int seq_no;
   JOCTET* icc_data;
@@ -115,14 +119,14 @@ boolean read_icc_profile(j_decompress_ptr cinfo, JOCTET** icc_data_ptr,
     marker_present[seq_no] = 0;
   }
 
-  for (marker = cinfo->marker_list; marker != NULL; marker = marker->next) {
-    if (marker_is_icc(marker)) {
+  for (t_marker = cinfo->marker_list; t_marker != nullptr; t_marker = t_marker->next) {
+    if (marker_is_icc(t_marker)) {
       if (num_markers == 0) {
-        num_markers = GETJOCTET(marker->data[13]);
-      } else if (num_markers != GETJOCTET(marker->data[13])) {
+        num_markers = GETJOCTET(t_marker->data[13]).UNSAFE_unverified();
+      } else if (num_markers != GETJOCTET(t_marker->data[13]).UNSAFE_unverified()) {
         return FALSE; /* inconsistent num_markers fields */
       }
-      seq_no = GETJOCTET(marker->data[12]);
+      seq_no = GETJOCTET(t_marker->data[12]).UNSAFE_unverified();
       if (seq_no <= 0 || seq_no > num_markers) {
         return FALSE; /* bogus sequence number */
       }
@@ -130,7 +134,7 @@ boolean read_icc_profile(j_decompress_ptr cinfo, JOCTET** icc_data_ptr,
         return FALSE; /* duplicate sequence numbers */
       }
       marker_present[seq_no] = 1;
-      data_length[seq_no] = marker->data_length - ICC_OVERHEAD_LEN;
+      data_length[seq_no] = t_marker->data_length.UNSAFE_unverified() - ICC_OVERHEAD_LEN;
     }
   }
 
@@ -162,14 +166,14 @@ boolean read_icc_profile(j_decompress_ptr cinfo, JOCTET** icc_data_ptr,
   }
 
   /* and fill it in */
-  for (marker = cinfo->marker_list; marker != NULL; marker = marker->next) {
-    if (marker_is_icc(marker)) {
+  for (t_marker = cinfo->marker_list; t_marker != nullptr; t_marker = t_marker->next) {
+    if (marker_is_icc(t_marker)) {
       JOCTET FAR* src_ptr;
       JOCTET* dst_ptr;
       unsigned int length;
-      seq_no = GETJOCTET(marker->data[12]);
+      seq_no = GETJOCTET(t_marker->data[12]).UNSAFE_unverified();
       dst_ptr = icc_data + data_offset[seq_no];
-      src_ptr = marker->data + ICC_OVERHEAD_LEN;
+      src_ptr = t_marker->data.UNSAFE_unverified() + ICC_OVERHEAD_LEN;
       length = data_length[seq_no];
       while (length--) {
         *dst_ptr++ = *src_ptr++;
