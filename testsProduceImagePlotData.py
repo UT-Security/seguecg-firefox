@@ -38,7 +38,7 @@ def main():
             out_row = [col_heading]
 
             for data in line[1:]:
-                colval = float(data.split('(')[1].split(')')[0]) * 100
+                colval = (float(data.split('(')[1].split(')')[0]) - 1) * 100
                 out_row += [colval]
 
             writer.writerow(out_row)
