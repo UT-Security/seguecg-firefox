@@ -15,7 +15,7 @@ set xtics scale 0
 set xtics font "Times New Roman,9"
 
 set yrange [-45:80]
-set ytics font "Times New Roman,10" -45,20,240
+set ytics font "Times New Roman,10" -40,20,240
 set ylabel "Overhead (%)"
 set ylabel font "Times New Roman"
 
