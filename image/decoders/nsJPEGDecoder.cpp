@@ -99,6 +99,7 @@ struct nsJPEGDecoderSandboxData {
   sandbox_callback_jpeg<void(*)(j_common_ptr)> progress_monitor_cb;
 
   nsJPEGDecoderSandboxData() {
+    used = false;
     sandbox.create_sandbox();
     init_source_cb = sandbox.register_callback(init_source);
     term_source_cb = sandbox.register_callback(term_source);
@@ -116,12 +117,12 @@ void nsJPEGDecoder::getRLBoxSandbox() {
   std::lock_guard<std::mutex> lock(jpeg_sandbox_create_mutex);
   if (chosenSandbox == nullptr) {
     chosenSandbox = new nsJPEGDecoderSandboxData();
-  }
-
-  while (chosenSandbox->used == true) {
-    jpeg_sandbox_create_mutex.unlock();
-    usleep(100);
-    jpeg_sandbox_create_mutex.lock();
+  } else {
+    while (chosenSandbox->used == true) {
+      jpeg_sandbox_create_mutex.unlock();
+      usleep(100);
+      jpeg_sandbox_create_mutex.lock();
+    }
   }
 
   chosenSandbox->used = true;
