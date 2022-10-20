@@ -6,23 +6,25 @@ set key above
 set key font "Times New Roman,10"
 
 set style data histogram
-set style histogram gap 3
+set style histogram cluster gap 3
 set style fill solid border rgb "black"
 
 set border 1
+set boxwidth 0.5
 
 set xtics scale 0
 set xtics font "Times New Roman,9"
 
-set yrange [-45:60]
-set ytics font "Times New Roman,10" -40,20,240
-set ylabel "Overhead (%)"
+set yrange [55:160]
+set ytics font "Times New Roman,10" 60,20,340
+set ylabel "Norm. runtime (%)"
 set ylabel font "Times New Roman"
 
-set arrow from -1,60 to 9,60 nohead
-set arrow from -1,-45 to -1,60 nohead
-set arrow from 9,-45 to 9,60 nohead
+set arrow from -1,160 to 9,160 nohead
+set arrow from -1,55 to -1,160 nohead
+set arrow from 9,55 to 9,160 nohead
 set arrow from -1,0 to 9,0 nohead lc rgb "#bbbbbb"
+set arrow from -1,100 to 9,100 nohead lc rgb "#aa000000" back
 set grid ytics lt 0 lw 2 lc rgb "#bbbbbb"
 
 set output outputfilename
