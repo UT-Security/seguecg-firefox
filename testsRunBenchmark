@@ -6,7 +6,6 @@
 # FFBuildDir=$BROWSER_BUILD_PATH
 
 FFBuildDir=$(realpath ./ffbuilds)
-FFVersions=("stock" "segue")
 
 if [ -z "$1" ]; then
 	echo "Missing output_folder. Expected argument $0 output_folder [graphite_perf_test, jpeg_perf, jpeg_black_width_perf]";
@@ -22,6 +21,13 @@ if [ -z "$2" ]; then
 	echo "Missing testname. Expected argument $0 output_folder [graphite_perf_test_mini, jpeg_perf, jpeg_black_width_perf]";
 	exit 1;
 fi
+
+if [ -z "$3" ]; then
+	echo "Missing Firefox versions from (stock segue boundschecks). Specify space separated e.g. 'stock segue'";
+	exit 1;
+fi
+
+FFVersions=($3)
 
 OUTPUTPATH=$(cd "$(dirname "$1")"; pwd)/$(basename "$1")
 mkdir -p ${OUTPUTPATH}
