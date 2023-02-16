@@ -1,5 +1,5 @@
 # pass in inputfilename and outputfilename
-set terminal pdf enhanced size 3.5,1.2
+set terminal pdf enhanced size 3.8,1.2
 
 set key outside
 set key above
