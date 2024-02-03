@@ -49,6 +49,22 @@ def read(folder, filename):
 def remove_suffix(word, suffix):
    return word[:-len(suffix)] if word.endswith(suffix) else word
 
+def get_ordered(files):
+    standard_files = []
+    this_eval_files = []
+    this_eval_prefix = ["segue"]
+    for file in files:
+        for prefix in this_eval_prefix:
+            if file.startswith(prefix):
+                this_eval_files.append(file)
+            else:
+                standard_files.append(file)
+            break
+    ret = standard_files + this_eval_files
+    print(ret)
+    return ret
+
+
 def main():
     if len(sys.argv) < 2:
         print("Expected " + sys.argv[0] + " inputFolderName")
@@ -70,6 +86,8 @@ def main():
 
     if not stock_terminal_analysis_file_found:
         print("Could not find stock terminal analysis file: " + stock_terminal_analysis_file)
+
+    other_terminal_analysis_files = get_ordered(other_terminal_analysis_files)
 
     parsedStock = json.loads(read(inputFolderName, stock_terminal_analysis_file))["data"]
     parsedOthers = []
