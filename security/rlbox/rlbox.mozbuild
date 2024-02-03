@@ -37,6 +37,9 @@ def RLBoxLibrary(name):
     # fails inside the sandbox. This information is used to annotate crash reports.
     DEFINES["WASM_RT_GROW_FAILED_HANDLER"] = "moz_wasm2c_memgrow_failed"
 
+    if CONFIG["WASM_RT_USE_SEGUE"]:
+        SOURCES["/../seguecg-wasm2c/wasm2c/wasm-rt-impl.c"].flags += [ "-mfsgsbase" ]
+
     SOURCES[f"!{name}.wasm.c"].flags += [
         "-Wno-unused",
     ]
