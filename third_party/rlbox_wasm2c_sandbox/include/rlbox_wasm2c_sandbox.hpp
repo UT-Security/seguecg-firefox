@@ -23,6 +23,12 @@
 #include <utility>
 #include <vector>
 
+#ifdef WASM_RT_USE_SEGUE
+extern "C" {
+void wasm_rt_set_segment_base(uintptr_t base);
+}
+#endif
+
 #if defined(_WIN32)
 // Ensure the min/max macro in the header doesn't collide with functions in
 // std::
@@ -795,6 +801,11 @@ public:
     using T_NoVoidRet =
       std::conditional_t<std::is_void_v<T_Ret>, uint32_t, T_Ret>;
     T_NoVoidRet ret;
+
+#ifdef WASM_RT_USE_SEGUE
+  wasm_rt_set_segment_base((uintptr_t)sandbox_memory_info.data);
+#endif
+
 
     if constexpr (std::is_void_v<T_Ret>) {
       RLBOX_WASM2C_UNUSED(ret);
