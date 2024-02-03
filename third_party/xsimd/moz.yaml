@@ -1,0 +1,45 @@
+schema: 1
+
+bugzilla:
+  product: Toolkit
+  component: "General"
+
+origin:
+  name: xsimd
+  description: C++ wrappers for SIMD intrinsics
+
+  url: https://github.com/QuantStack/xsimd
+
+  release: 12.1.1 (2023-12-12T17:17:27+01:00).
+  revision: 12.1.1
+
+  license: BSD-3-Clause
+
+vendoring:
+  url: https://github.com/QuantStack/xsimd
+  source-hosting: github
+  tracking: tag
+
+  exclude:
+    - ".*"
+    - "*.md"
+    - "*.yml"
+    - "*.txt"
+    - "*.in"
+    - "*.sh"
+    - benchmark
+    - cmake
+    - docs
+    - examples
+    - test
+
+  keep:
+    - include/
+
+updatebot:
+  maintainer-phab: padenot
+  maintainer-bz: padenot@mozilla.com
+  tasks:
+    - type: vendoring
+      enabled: true
+      frequency: release
