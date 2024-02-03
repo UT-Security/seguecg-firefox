@@ -8,8 +8,8 @@ with Files("**"):
     BUG_COMPONENT = ("Core", "Security: RLBox")
 
 LOCAL_INCLUDES += [
-    "/third_party/picosha2/",
     "/../seguecg-wasm2c/include/",
+    "/third_party/picosha2/",
 ]
 
 GeneratedFile(
@@ -25,7 +25,7 @@ HOST_SOURCES += [
     "/../seguecg-wasm2c/src/binary-reader-ir.cc",
     "/../seguecg-wasm2c/src/binary-reader-logging.cc",
     "/../seguecg-wasm2c/src/binary-reader-objdump.cc",
-    "/../seguecg-wasm2c/src/binary-reader-opcnt.cc",
+    "/../seguecg-wasm2c/src/binary-reader-stats.cc",
     "/../seguecg-wasm2c/src/binary-reader.cc",
     "/../seguecg-wasm2c/src/binary-writer-spec.cc",
     "/../seguecg-wasm2c/src/binary-writer.cc",
@@ -67,6 +67,7 @@ HOST_SOURCES += [
 # wasm2c sources
 HOST_SOURCES += [
     "/../seguecg-wasm2c/src/c-writer.cc",
+    "/../seguecg-wasm2c/src/prebuilt/wasm2c_atomicops_source_declarations.cc",
     "/../seguecg-wasm2c/src/prebuilt/wasm2c_header_bottom.cc",
     "/../seguecg-wasm2c/src/prebuilt/wasm2c_header_top.cc",
     "/../seguecg-wasm2c/src/prebuilt/wasm2c_simd_source_declarations.cc",

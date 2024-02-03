@@ -1,6 +1,5 @@
 ac_add_options --enable-application=browser
 
-ac_add_options --with-wasm-sandboxed-libraries=graphite,jpeg
 ac_add_options --with-wasi-sysroot=@TOPSRCDIR@/../wasi-sdk/share/wasi-sysroot
 
 export WASM_CC="$topsrcdir/../wasi-sdk/bin/clang --target=wasm32-wasi"

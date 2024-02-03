@@ -242,13 +242,6 @@
   f(boolean (*)(j_decompress_ptr, int), resync_to_restart, FIELD_NORMAL, ##__VA_ARGS__) g() \
   f(void (*)(j_decompress_ptr), term_source, FIELD_NORMAL, ##__VA_ARGS__) g()
 
-#define sandbox_fields_reflection_jpeg_class_jpeg_progress_mgr(f, g, ...) \
-  f(void (*)(j_common_ptr), progress_monitor, FIELD_NORMAL, ##__VA_ARGS__) g() \
-  f(long, pass_counter, FIELD_NORMAL, ##__VA_ARGS__) g() \
-  f(long, pass_limit, FIELD_NORMAL, ##__VA_ARGS__) g() \
-  f(int, completed_passes, FIELD_NORMAL, ##__VA_ARGS__) g() \
-  f(int, total_passes, FIELD_NORMAL, ##__VA_ARGS__) g()
-
 #define sandbox_fields_reflection_jpeg_class_jpeg_marker_struct(f, g, ...) \
   f(struct jpeg_marker_struct *, next, FIELD_NORMAL, ##__VA_ARGS__) g() \
   f(unsigned char, marker, FIELD_NORMAL, ##__VA_ARGS__) g() \
@@ -264,7 +257,6 @@
   f(jpeg_error_mgr, jpeg, ##__VA_ARGS__) \
   f(jpeg_marker_struct, jpeg, ##__VA_ARGS__) \
   f(jpeg_memory_mgr, jpeg, ##__VA_ARGS__) \
-  f(jpeg_progress_mgr, jpeg, ##__VA_ARGS__) \
   f(jpeg_source_mgr, jpeg, ##__VA_ARGS__) \
   f(jpeg_progress_mgr, jpeg, ##__VA_ARGS__) \
   f(decoder_error_mgr, jpeg, ##__VA_ARGS__)

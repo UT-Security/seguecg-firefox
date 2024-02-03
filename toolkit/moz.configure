@@ -2754,7 +2754,7 @@ with only_when(requires_wasm_sandboxing & compile_environment):
 
     set_config("WASM_CXX", wasm_cxx_with_flags)
 
-    wasm_compile_flags = dependable(["-fno-exceptions", "-fno-strict-aliasing"])
+    wasm_compile_flags_base = dependable(["-fno-exceptions", "-fno-strict-aliasing"])
 
 
     @depends(wasm_compile_flags_base, "--enable-wasm-use-guard-pages", "--enable-wasm-use-bounds-checks", "--enable-wasm-use-segue")

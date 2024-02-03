@@ -9,8 +9,8 @@ include("rlbox.mozbuild")
 RLBoxLibrary("rlbox")
 
 LOCAL_INCLUDES += [
-    "/third_party/simde/",
     "/../seguecg-wasm2c/wasm2c/",
+    "/third_party/simde/",
 ]
 
 EXPORTS += [

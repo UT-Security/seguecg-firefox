@@ -146,6 +146,15 @@ struct markerStruct
       return ret;                                                              \
     }                                                                          \
                                                                                \
+    inline tainted<MaybeConst T*, T_Sbx>                                       \
+      operator&()  noexcept                                                    \
+    {                                                                          \
+      auto ref_cast =                                                          \
+        reinterpret_cast<MaybeConst T*>(&get_sandbox_value_ref());             \
+      auto ret = tainted<MaybeConst T*, T_Sbx>::internal_factory(ref_cast);    \
+      return ret;                                                              \
+    }                                                                          \
+                                                                               \
     inline auto UNSAFE_unverified() const { return get_raw_value(); }          \
     inline auto UNSAFE_sandboxed(rlbox_sandbox<T_Sbx>& sandbox) const          \
     {                                                                          \

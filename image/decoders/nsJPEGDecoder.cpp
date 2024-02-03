@@ -185,6 +185,8 @@ nsJPEGDecoder::nsJPEGDecoder(RasterImage* aImage,
   auto& mSourceMgr = *mSourceMgr_obj;
   auto mErr_obj = mSandbox->malloc_in_sandbox<decoder_error_mgr>();
   auto& mErr = *mErr_obj;
+  auto mProgressMgr_obj = mSandbox->malloc_in_sandbox<jpeg_progress_mgr>();
+  auto& mProgressMgr = *mProgressMgr_obj;
 
   this->p_mInfo = mInfo_obj.to_opaque();
   this->p_mSourceMgr = mSourceMgr_obj.to_opaque();
@@ -249,6 +251,7 @@ nsJPEGDecoder::~nsJPEGDecoder() {
   mSandbox->free_in_sandbox(p_mInfo);
   mSandbox->free_in_sandbox(p_mSourceMgr);
   mSandbox->free_in_sandbox(p_mErr);
+  mSandbox->free_in_sandbox(p_mProgressMgr);
   m_p_output_transfer_buffer.set_zero();
   p_mInfo.set_zero();
   p_mSourceMgr.set_zero();
@@ -297,6 +300,7 @@ nsresult nsJPEGDecoder::InitInternal() {
   auto& mInfo = *rlbox::from_opaque(p_mInfo);
   auto& mSourceMgr = *rlbox::from_opaque(p_mSourceMgr);
   auto& mErr = *rlbox::from_opaque(p_mErr);
+  auto& mProgressMgr = *rlbox::from_opaque(p_mProgressMgr);
 
   // We set up the normal JPEG error routines, then override error_exit.
   mInfo.err = sandbox_invoke(*mSandbox, jpeg_std_error, &mErr.pub);
