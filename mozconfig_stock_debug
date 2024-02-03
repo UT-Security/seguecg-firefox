@@ -1,0 +1,7 @@
+. $topsrcdir/mozconfig_common
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/ffbuilds/firefox_stock_debug
+ac_add_options --enable-wasm-use-guard-pages
+
+ac_add_options --enable-debug
+ac_add_options --disable-optimize

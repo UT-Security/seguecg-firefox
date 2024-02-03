@@ -2561,6 +2561,60 @@ set_define("MOZ_HAS_REMOTE", has_remote)
 # ==============================================================
 
 
+# SEGUECG configs
+# ==============================================================
+
+option(
+    "--enable-wasm-use-guard-pages",
+    env="ENABLE_WASM_USE_GUARD_PAGES",
+    help="Enable wasm sandboxing with guard pages",
+    default=False,
+)
+
+@depends("--enable-wasm-use-guard-pages")
+def requires_wasm_use_guard_pages(value):
+    if value:
+        return True
+
+set_config("WASM_RT_MEMCHECK_GUARD_PAGES", requires_wasm_use_guard_pages)
+set_define("WASM_RT_MEMCHECK_GUARD_PAGES", requires_wasm_use_guard_pages)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-bounds-checks",
+    env="ENABLE_WASM_USE_BOUNDS_CHECKS",
+    help="Enable wasm sandboxing with bounds checks",
+    default=False,
+)
+
+@depends("--enable-wasm-use-bounds-checks")
+def requires_wasm_use_bounds_checks(value):
+    if value:
+        return True
+
+set_config("WASM_RT_MEMCHECK_BOUNDS_CHECK", requires_wasm_use_bounds_checks)
+set_define("WASM_RT_MEMCHECK_BOUNDS_CHECK", requires_wasm_use_bounds_checks)
+
+# ==============================================================
+
+option(
+    "--enable-wasm-use-segue",
+    env="ENABLE_WASM_USE_SEGUE",
+    help="Enable wasm sandboxing with segue",
+    default=False,
+)
+
+@depends("--enable-wasm-use-segue")
+def requires_wasm_use_segue(value):
+    if value:
+        return True
+
+set_config("WASM_RT_USE_SEGUE", requires_wasm_use_segue)
+set_define("WASM_RT_USE_SEGUE", requires_wasm_use_segue)
+
+# ==============================================================
+
 def wasm_sandboxing_libraries():
     return (
         "graphite",
@@ -2700,6 +2754,19 @@ with only_when(requires_wasm_sandboxing & compile_environment):
     set_config("WASM_CXX", wasm_cxx_with_flags)
 
     wasm_compile_flags = dependable(["-fno-exceptions", "-fno-strict-aliasing"])
+
+
+    @depends(wasm_compile_flags_base, "--enable-wasm-use-guard-pages", "--enable-wasm-use-bounds-checks", "--enable-wasm-use-segue")
+    def wasm_compile_flags(flags_base, guard_pages, bounds_checks, segue):
+        result = flags_base
+        if guard_pages:
+            result.append("-DWASM_RT_MEMCHECK_GUARD_PAGES")
+        if bounds_checks:
+            result.append("-DWASM_RT_MEMCHECK_BOUNDS_CHECK")
+        if segue:
+             result.append("-DWASM_RT_USE_SEGUE")
+        return result
+
     option(env="WASM_CFLAGS", nargs=1, help="Options to pass to WASM_CC")
 
     @depends("WASM_CFLAGS", wasm_compile_flags)

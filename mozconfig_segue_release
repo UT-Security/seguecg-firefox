@@ -1,0 +1,5 @@
+. $topsrcdir/mozconfig_common
+
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/ffbuilds/firefox_segue_release
+ac_add_options --enable-wasm-use-guard-pages
+ac_add_options --enable-wasm-use-segue

@@ -37,7 +37,6 @@ ID
 /.clang-tidy
 /.clangd
 /.mozconfig*
-/mozconfig*
 /old-configure
 /config.cache
 /config.log
@@ -235,3 +234,6 @@ tools/esmify/package-lock.json
 
 # Ignore automatically generated mots documentation
 docs/mots/index.rst
+
+ffbuilds/
+
