@@ -191,6 +191,7 @@ nsJPEGDecoder::nsJPEGDecoder(RasterImage* aImage,
   this->p_mInfo = mInfo_obj.to_opaque();
   this->p_mSourceMgr = mSourceMgr_obj.to_opaque();
   this->p_mErr = mErr_obj.to_opaque();
+  this->p_mProgressMgr = mProgressMgr_obj.to_opaque();
   mErr.pub.error_exit = nullptr;
   mErr.pub.emit_message = nullptr;
   mErr.pub.output_message = nullptr;

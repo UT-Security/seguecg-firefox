@@ -311,7 +311,7 @@ public:
 private:
   mutable typename RLBOX_WASM_MODULE_TYPE_CURR::instance_t wasm2c_instance{ 0 };
   struct w2c_env sandbox_memory_env;
-  struct w2c_wasi__snapshot__preview1 wasi_env;
+  struct w2c_wasi__snapshot__preview1 wasi_env {0};
   bool instance_initialized = false;
   wasm_rt_memory_t sandbox_memory_info;
   mutable wasm_rt_funcref_table_t sandbox_callback_table;
