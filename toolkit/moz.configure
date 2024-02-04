@@ -2623,7 +2623,7 @@ def wasm_sandboxing_libraries():
         "expat",
         "woff2",
         "soundtouch",
-        "jpeg",
+        #"jpeg",
     )
 
 
